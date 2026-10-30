@@ -75,19 +75,19 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Mi perfil",
-                onBack = onBack
-            )
-        },
-        bottomBar = {
-            AppBottomBar(
-                selectedRoute = AppRoute.Profile.route,
-                onHomeClick = onHomeClick,
-                onCatalogClick = onCatalogClick,
-                onEventsClick = onEventsClick,
-                onProfileClick = {}
-            )
+            Column {
+                AppTopBar(
+                    title = "Mi perfil",
+                    onBack = onBack
+                )
+                AppBottomBar(
+                    selectedRoute = AppRoute.Profile.route,
+                    onHomeClick = onHomeClick,
+                    onCatalogClick = onCatalogClick,
+                    onEventsClick = onEventsClick,
+                    onProfileClick = {}
+                )
+            }
         }
     ) { innerPadding ->
         Column(

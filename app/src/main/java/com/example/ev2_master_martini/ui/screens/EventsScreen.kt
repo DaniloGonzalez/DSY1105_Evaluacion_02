@@ -28,19 +28,19 @@ fun EventsScreen(
 ) {
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Eventos y novedades",
-                onBack = onBack
-            )
-        },
-        bottomBar = {
-            AppBottomBar(
-                selectedRoute = AppRoute.Events.route,
-                onHomeClick = onHomeClick,
-                onCatalogClick = onCatalogClick,
-                onEventsClick = {},
-                onProfileClick = onProfileClick
-            )
+            Column {
+                AppTopBar(
+                    title = "Eventos y novedades",
+                    onBack = onBack
+                )
+                AppBottomBar(
+                    selectedRoute = AppRoute.Events.route,
+                    onHomeClick = onHomeClick,
+                    onCatalogClick = onCatalogClick,
+                    onEventsClick = {},
+                    onProfileClick = onProfileClick
+                )
+            }
         }
     ) { innerPadding ->
         Column(

@@ -29,19 +29,19 @@ fun CatalogScreen(
 ) {
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Catálogo",
-                onBack = onBack
-            )
-        },
-        bottomBar = {
-            AppBottomBar(
-                selectedRoute = AppRoute.Catalog.route,
-                onHomeClick = onHomeClick,
-                onCatalogClick = {},
-                onEventsClick = onEventsClick,
-                onProfileClick = onProfileClick
-            )
+            Column {
+                AppTopBar(
+                    title = "Catálogo",
+                    onBack = onBack
+                )
+                AppBottomBar(
+                    selectedRoute = AppRoute.Catalog.route,
+                    onHomeClick = onHomeClick,
+                    onCatalogClick = {},
+                    onEventsClick = onEventsClick,
+                    onProfileClick = onProfileClick
+                )
+            }
         }
     ) { innerPadding ->
         Column(
