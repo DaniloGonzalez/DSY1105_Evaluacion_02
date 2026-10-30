@@ -2,6 +2,7 @@ package com.example.ev2_master_martini.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -27,6 +28,7 @@ class UserRepository(
         val businessType = stringPreferencesKey("business_type")
         val businessSize = stringPreferencesKey("business_size")
         val catalogOptions = stringPreferencesKey("catalog_options")
+        val sessionActive = booleanPreferencesKey("session_active")
     }
 
     suspend fun saveAccount(account: UserAccount) {
@@ -44,6 +46,22 @@ class UserRepository(
         return context.userDataStore.data.map { preferences ->
             createAccountOrNull(preferences)
         }
+    }
+
+    fun isSessionActive(): Flow<Boolean> {
+        return context.userDataStore.data.map { preferences ->
+            preferences[Keys.sessionActive] ?: false
+        }
+    }
+
+    suspend fun setSessionActive(active: Boolean) {
+        context.userDataStore.edit { preferences ->
+            preferences[Keys.sessionActive] = active
+        }
+    }
+
+    suspend fun logout() {
+        setSessionActive(false)
     }
 
     suspend fun saveInterests(interests: UserInterests) {

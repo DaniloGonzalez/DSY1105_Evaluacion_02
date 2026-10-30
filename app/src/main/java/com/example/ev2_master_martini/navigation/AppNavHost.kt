@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,17 +13,22 @@ import androidx.navigation.compose.composable
 import com.example.ev2_master_martini.ui.screens.CatalogScreen
 import com.example.ev2_master_martini.ui.screens.ContactSalesScreen
 import com.example.ev2_master_martini.ui.screens.ContentDetailScreen
+import com.example.ev2_master_martini.ui.screens.EventDetailScreen
 import com.example.ev2_master_martini.ui.screens.EventsScreen
 import com.example.ev2_master_martini.ui.screens.HomeScreen
 import com.example.ev2_master_martini.ui.screens.InterestsScreen
 import com.example.ev2_master_martini.ui.screens.LoginScreen
 import com.example.ev2_master_martini.ui.screens.ProfileScreen
+import com.example.ev2_master_martini.ui.screens.RecipeDetailScreen
+import com.example.ev2_master_martini.ui.screens.RecipesScreen
 import com.example.ev2_master_martini.ui.screens.RegisterScreen
 import com.example.ev2_master_martini.ui.screens.SplashScreen
+import com.example.ev2_master_martini.data.UserRepository
 import com.example.ev2_master_martini.viewmodel.InterestsViewModel
 import com.example.ev2_master_martini.viewmodel.LoginViewModel
 import com.example.ev2_master_martini.viewmodel.ProfileViewModel
 import com.example.ev2_master_martini.viewmodel.RegisterViewModel
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun AppNavHost(
@@ -43,9 +50,23 @@ fun AppNavHost(
         startDestination = startDestination
     ) {
         composable(AppRoute.Splash.route) {
+            val context = LocalContext.current
+            val repository = remember(context) {
+                UserRepository(context.applicationContext)
+            }
+            val sessionActive by repository.isSessionActive().collectAsState(initial = false)
+            val interests by repository.getInterests().collectAsState(initial = null)
+
             SplashScreen(
                 onFinished = {
-                    navController.navigate(AppRoute.Login.route) {
+                    val destination = when {
+                        sessionActive && !interests?.catalogOptions.isNullOrEmpty() ->
+                            AppRoute.Home.route
+                        sessionActive -> AppRoute.Interest.route
+                        else -> AppRoute.Login.route
+                    }
+
+                    navController.navigate(destination) {
                         popUpTo(AppRoute.Splash.route) {
                             inclusive = true
                         }
@@ -55,12 +76,25 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Login.route) {
+            val context = LocalContext.current
+            val repository = remember(context) {
+                UserRepository(context.applicationContext)
+            }
             val loginViewModel: LoginViewModel = viewModel()
             val state by loginViewModel.uiState.collectAsState()
 
             LaunchedEffect(state.loginSuccess) {
                 if (state.loginSuccess) {
-                    navController.navigate(AppRoute.Interest.route) {
+                    val hasInterests = repository.getInterests().first()
+                        ?.catalogOptions
+                        ?.isNotEmpty() == true
+                    val destination = if (hasInterests) {
+                        AppRoute.Home.route
+                    } else {
+                        AppRoute.Interest.route
+                    }
+
+                    navController.navigate(destination) {
                         popUpTo(AppRoute.Login.route) {
                             inclusive = true
                         }
@@ -163,11 +197,42 @@ fun AppNavHost(
                 onHomeClick = {
                     navigateToMain(AppRoute.Home.route)
                 },
-                onEventsClick = {
-                    navigateToMain(AppRoute.Events.route)
+                onRecipesClick = {
+                    navigateToMain(AppRoute.Recipes.route)
                 },
                 onProfileClick = {
                     navigateToMain(AppRoute.Profile.route)
+                }
+            )
+        }
+
+        composable(AppRoute.Recipes.route) {
+            RecipesScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    navigateToMain(AppRoute.Home.route)
+                },
+                onCatalogClick = {
+                    navigateToMain(AppRoute.Catalog.route)
+                },
+                onProfileClick = {
+                    navigateToMain(AppRoute.Profile.route)
+                },
+                onRecipeClick = { recipeId ->
+                    navController.navigate(
+                        "${AppRoute.RecipeDetail.route}/$recipeId"
+                    )
+                }
+            )
+        }
+
+        composable("${AppRoute.RecipeDetail.route}/{recipeId}") { backStackEntry ->
+            RecipeDetailScreen(
+                recipeId = backStackEntry.arguments?.getString("recipeId").orEmpty(),
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -204,6 +269,20 @@ fun AppNavHost(
                 },
                 onProfileClick = {
                     navigateToMain(AppRoute.Profile.route)
+                },
+                onEventClick = { eventId ->
+                    navController.navigate(
+                        "${AppRoute.EventDetail.route}/$eventId"
+                    )
+                }
+            )
+        }
+
+        composable("${AppRoute.EventDetail.route}/{eventId}") { backStackEntry ->
+            EventDetailScreen(
+                eventId = backStackEntry.arguments?.getString("eventId").orEmpty(),
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -223,8 +302,14 @@ fun AppNavHost(
                 onCatalogClick = {
                     navigateToMain(AppRoute.Catalog.route)
                 },
-                onEventsClick = {
-                    navigateToMain(AppRoute.Events.route)
+                onLogout = {
+                    profileViewModel.logout {
+                        navController.navigate(AppRoute.Login.route) {
+                            popUpTo(AppRoute.Home.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
                 }
             )
         }

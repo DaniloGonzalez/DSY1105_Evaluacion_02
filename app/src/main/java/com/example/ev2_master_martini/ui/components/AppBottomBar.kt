@@ -11,7 +11,6 @@ fun AppBottomBar(
     selectedRoute: String,
     onHomeClick: () -> Unit,
     onCatalogClick: () -> Unit,
-    onEventsClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
     NavigationBar {
@@ -26,21 +25,14 @@ fun AppBottomBar(
             selected = selectedRoute == AppRoute.Catalog.route,
             onClick = onCatalogClick,
             icon = { Text("▦") },
-            label = { Text("Catálogo") }
-        )
-
-        NavigationBarItem(
-            selected = selectedRoute == AppRoute.Events.route,
-            onClick = onEventsClick,
-            icon = { Text("★") },
-            label = { Text("Eventos") }
+            label = { Text("Contenidos") }
         )
 
         NavigationBarItem(
             selected = selectedRoute == AppRoute.Profile.route,
             onClick = onProfileClick,
             icon = { Text("●") },
-            label = { Text("Perfil") }
+            label = { Text("Mi perfil") }
         )
     }
 }

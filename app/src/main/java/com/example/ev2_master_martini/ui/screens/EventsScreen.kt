@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +26,8 @@ fun EventsScreen(
     onBack: () -> Unit,
     onHomeClick: () -> Unit,
     onCatalogClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onEventClick: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -37,7 +40,6 @@ fun EventsScreen(
                     selectedRoute = AppRoute.Events.route,
                     onHomeClick = onHomeClick,
                     onCatalogClick = onCatalogClick,
-                    onEventsClick = {},
                     onProfileClick = onProfileClick
                 )
             }
@@ -46,6 +48,7 @@ fun EventsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -57,33 +60,19 @@ fun EventsScreen(
 
             Text("Revisa las próximas actividades de Master Martini.")
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Taller de chocolatería",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text("Conoce nuevas técnicas para trabajar con chocolate.")
-                    Text("Cupos disponibles")
-                }
-            }
+            EventCard(
+                title = "Taller de chocolatería",
+                description = "Conoce nuevas técnicas para trabajar con chocolate.",
+                availability = "Cupos disponibles",
+                onClick = { onEventClick("taller_chocolateria") }
+            )
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Novedades de productos",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text("Descubre nuevos insumos para tus preparaciones.")
-                    Text("Ver novedades")
-                }
-            }
+            EventCard(
+                title = "Novedades de productos",
+                description = "Descubre nuevos insumos para tus preparaciones.",
+                availability = "Ver novedades",
+                onClick = { onEventClick("novedades_productos") }
+            )
 
             Button(
                 onClick = onBack,
@@ -91,6 +80,35 @@ fun EventsScreen(
             ) {
                 Text("Volver")
             }
+        }
+    }
+}
+
+@Composable
+private fun EventCard(
+    title: String,
+    description: String,
+    availability: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(description)
+            Text(availability)
+            Text(
+                text = "Ver detalle",
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -103,7 +121,8 @@ fun EventsScreenPreview() {
             onBack = {},
             onHomeClick = {},
             onCatalogClick = {},
-            onProfileClick = {}
+            onProfileClick = {},
+            onEventClick = {}
         )
     }
 }

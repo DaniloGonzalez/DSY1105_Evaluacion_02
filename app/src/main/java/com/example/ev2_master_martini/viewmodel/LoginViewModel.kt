@@ -48,6 +48,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     account.email.equals(current.email.trim(), ignoreCase = true) &&
                     account.password == current.password
                 ) {
+                    userRepository.setSessionActive(true)
                     _uiState.update {
                         it.copy(isLoading = false, loginSuccess = true)
                     }
