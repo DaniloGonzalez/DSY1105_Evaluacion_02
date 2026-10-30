@@ -42,7 +42,7 @@ fun ProfileScreen(
     onBack: () -> Unit,
     onHomeClick: () -> Unit,
     onCatalogClick: () -> Unit,
-    onEventsClick: () -> Unit
+    onLogout: () -> Unit
 ) {
     val context = LocalContext.current
     var profilePhoto by remember {
@@ -84,7 +84,6 @@ fun ProfileScreen(
                     selectedRoute = AppRoute.Profile.route,
                     onHomeClick = onHomeClick,
                     onCatalogClick = onCatalogClick,
-                    onEventsClick = onEventsClick,
                     onProfileClick = {}
                 )
             }
@@ -169,6 +168,13 @@ fun ProfileScreen(
             ) {
                 Text("Volver al inicio")
             }
+
+            Button(
+                onClick = onLogout,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Cerrar sesión")
+            }
         }
     }
 }
@@ -182,7 +188,7 @@ fun ProfileScreenPreview() {
             onBack = {},
             onHomeClick = {},
             onCatalogClick = {},
-            onEventsClick = {}
+            onLogout = {}
         )
     }
 }

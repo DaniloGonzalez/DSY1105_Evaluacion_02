@@ -21,6 +21,13 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         loadProfile()
     }
 
+    fun logout(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            userRepository.logout()
+            onComplete()
+        }
+    }
+
     private fun loadProfile() {
         viewModelScope.launch {
             val account = userRepository.getAccount().first()

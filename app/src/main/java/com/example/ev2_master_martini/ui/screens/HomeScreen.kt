@@ -29,7 +29,6 @@ fun HomeScreen(
                 selectedRoute = AppRoute.Home.route,
                 onHomeClick = {},
                 onCatalogClick = onCatalogClick,
-                onEventsClick = onEventsClick,
                 onProfileClick = onProfileClick
             )
         }

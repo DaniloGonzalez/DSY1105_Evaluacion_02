@@ -24,7 +24,7 @@ fun CatalogScreen(
     onBack: () -> Unit,
     onContentClick: () -> Unit,
     onHomeClick: () -> Unit,
-    onEventsClick: () -> Unit,
+    onRecipesClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
     Scaffold(
@@ -38,7 +38,6 @@ fun CatalogScreen(
                     selectedRoute = AppRoute.Catalog.route,
                     onHomeClick = onHomeClick,
                     onCatalogClick = {},
-                    onEventsClick = onEventsClick,
                     onProfileClick = onProfileClick
                 )
             }
@@ -77,7 +76,7 @@ fun CatalogScreen(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onContentClick
+                onClick = onRecipesClick
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -110,7 +109,7 @@ fun CatalogScreenPreview() {
             onBack = {},
             onContentClick = {},
             onHomeClick = {},
-            onEventsClick = {},
+            onRecipesClick = {},
             onProfileClick = {}
         )
     }
