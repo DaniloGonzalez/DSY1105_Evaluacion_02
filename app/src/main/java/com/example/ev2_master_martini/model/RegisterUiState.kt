@@ -10,5 +10,8 @@ data class RegisterUiState(
     val emailError: String? = null,
     val phoneError: String? = null,
     val addressError: String? = null,
-    val rutError: String? = null
+    val rutError: String? = null,
+    val isSaving: Boolean = false,
+    val saveError: String? = null,
+    val registrationSaved: Boolean = false
 )
