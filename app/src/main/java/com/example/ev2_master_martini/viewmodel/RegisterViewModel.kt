@@ -6,9 +6,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.ev2_master_martini.data.UserRepository
+import com.example.ev2_master_martini.model.UserAccount
+import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel() {
+class RegisterViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val userRepository = UserRepository(application)
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
@@ -109,5 +116,49 @@ class RegisterViewModel : ViewModel() {
             addressError,
             rutError
         ).all { it == null }
+    }
+
+    fun saveRegistration() {
+        if (!validate()) {
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isSaving = true,
+                    saveError = null
+                )
+            }
+
+            try {
+                val current = _uiState.value
+
+                val account = UserAccount(
+                    name = current.name.trim(),
+                    email = current.email.trim(),
+                    password = "Demo1234",
+                    phone = current.phone.trim(),
+                    address = current.address.trim(),
+                    rut = current.rut.trim()
+                )
+
+                userRepository.saveAccount(account)
+
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        registrationSaved = true
+                    )
+                }
+            } catch (exception: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        saveError = "No se pudo guardar el registro"
+                    )
+                }
+            }
+        }
     }
 }
