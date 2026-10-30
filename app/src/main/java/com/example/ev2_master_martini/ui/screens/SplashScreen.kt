@@ -1,28 +1,29 @@
 package com.example.ev2_master_martini.ui.screens
 
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
-    onContinue: () -> Unit
+    onFinished: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(
         label = "splash_loader_transition"
@@ -37,6 +38,11 @@ fun SplashScreen(
         ),
         label = "splash_loader_rotation"
     )
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        onFinished()
+    }
 
     Column(
         modifier = Modifier
@@ -59,15 +65,13 @@ fun SplashScreen(
         )
 
         Text(
-            text = "Contenido para negocio gastronómico",
+            text = "Cargando...",
             modifier = Modifier.padding(top = 12.dp)
         )
 
-        Button(
-            onClick = onContinue,
-            modifier = Modifier.padding(top = 24.dp)
-        ) {
-            Text(text = "Comenzar")
-        }
+        Text(
+            text = "Contenido para negocio gastronómico",
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }

@@ -6,99 +6,89 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ev2_master_martini.model.InterestsUiState
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
-import androidx.compose.material3.Text
 
 @Composable
-fun InterestsScreen(onContinue: () -> Unit){
-    var businessType by rememberSaveable { mutableStateOf("") }
-    var businessSize by rememberSaveable { mutableStateOf("") }
-    var contentPreference by rememberSaveable { mutableStateOf("") }
+fun InterestsScreen(
+    state: InterestsUiState,
+    onBusinessTypeSelected: (String) -> Unit,
+    onBusinessSizeSelected: (String) -> Unit,
+    onCatalogOptionToggle: (String) -> Unit,
+    onContinue: () -> Unit
+) {
+    val catalogOptions = listOf(
+        "Recetas",
+        "Videos técnicos",
+        "Cursos",
+        "Chocolatería",
+        "Pastelería"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Cuestionario de intereses"
+            text = "Cuestionario de intereses",
+            style = MaterialTheme.typography.headlineMedium
         )
 
         Text(
-            text = "Cuéntanos un poco sobre tu negocio."
+            text = "Selecciona tus preferencias para personalizar el catálogo."
         )
 
         Text(text = "Tipo de negocio")
 
-        InterestOption(
-            text = "Pastelería",
-            selected = businessType == "Pastelería",
-            onSelected = { businessType = "Pastelería" }
-        )
-
-        InterestOption(
-            text = "Panadería",
-            selected = businessType == "Panadería",
-            onSelected = { businessType = "Panadería" }
-        )
-
-        InterestOption(
-            text = "Restaurante",
-            selected = businessType == "Restaurante",
-            onSelected = { businessType = "Restaurante" }
-        )
+        listOf("Pastelería", "Panadería", "Restaurante").forEach { option ->
+            RadioOption(
+                text = option,
+                selected = state.businessType == option,
+                onSelected = { onBusinessTypeSelected(option) }
+            )
+        }
 
         Text(text = "Tamaño del negocio")
 
-        InterestOption(
-            text = "Pequeño",
-            selected = businessSize == "Pequeño",
-            onSelected = { businessSize = "Pequeño" }
-        )
+        listOf("Pequeño", "Mediano", "Grande").forEach { option ->
+            RadioOption(
+                text = option,
+                selected = state.businessSize == option,
+                onSelected = { onBusinessSizeSelected(option) }
+            )
+        }
 
-        InterestOption(
-            text = "Mediano",
-            selected = businessSize == "Mediano",
-            onSelected = { businessSize = "Mediano" }
-        )
+        Text(text = "Opciones del catálogo")
 
-        InterestOption(
-            text = "Grande",
-            selected = businessSize == "Grande",
-            onSelected = { businessSize = "Grande" }
-        )
+        catalogOptions.forEach { option ->
+            CheckboxOption(
+                text = option,
+                checked = option in state.selectedCatalogOptions,
+                onCheckedChange = { onCatalogOptionToggle(option) }
+            )
+        }
 
-        Text(text = "Contenido de interés")
-
-        InterestOption(
-            text = "Recetas",
-            selected = contentPreference == "Recetas",
-            onSelected = { contentPreference = "Recetas" }
-        )
-
-        InterestOption(
-            text = "Videos técnicos",
-            selected = contentPreference == "Videos técnicos",
-            onSelected = { contentPreference = "Videos técnicos" }
-        )
-
-        InterestOption(
-            text = "Cursos",
-            selected = contentPreference == "Cursos",
-            onSelected = { contentPreference = "Cursos" }
-        )
+        state.catalogError?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
 
         Button(
             onClick = onContinue,
@@ -109,9 +99,12 @@ fun InterestsScreen(onContinue: () -> Unit){
     }
 }
 
-
 @Composable
-private fun InterestOption(text: String, selected: Boolean, onSelected: ()-> Unit) {
+private fun RadioOption(
+    text: String,
+    selected: Boolean,
+    onSelected: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -120,7 +113,27 @@ private fun InterestOption(text: String, selected: Boolean, onSelected: ()-> Uni
             selected = selected,
             onClick = onSelected
         )
-        Text(text=text)
+
+        Text(text = text)
+    }
+}
+
+@Composable
+private fun CheckboxOption(
+    text: String,
+    checked: Boolean,
+    onCheckedChange: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { onCheckedChange() }
+        )
+
+        Text(text = text)
     }
 }
 
@@ -129,6 +142,10 @@ private fun InterestOption(text: String, selected: Boolean, onSelected: ()-> Uni
 fun InterestsScreenPreview() {
     Ev2_Master_MartiniTheme {
         InterestsScreen(
+            state = InterestsUiState(),
+            onBusinessTypeSelected = {},
+            onBusinessSizeSelected = {},
+            onCatalogOptionToggle = {},
             onContinue = {}
         )
     }

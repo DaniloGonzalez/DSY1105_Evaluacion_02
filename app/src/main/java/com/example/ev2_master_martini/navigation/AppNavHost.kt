@@ -1,6 +1,7 @@
 package com.example.ev2_master_martini.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,9 +14,13 @@ import com.example.ev2_master_martini.ui.screens.ContentDetailScreen
 import com.example.ev2_master_martini.ui.screens.EventsScreen
 import com.example.ev2_master_martini.ui.screens.HomeScreen
 import com.example.ev2_master_martini.ui.screens.InterestsScreen
+import com.example.ev2_master_martini.ui.screens.LoginScreen
 import com.example.ev2_master_martini.ui.screens.ProfileScreen
 import com.example.ev2_master_martini.ui.screens.RegisterScreen
 import com.example.ev2_master_martini.ui.screens.SplashScreen
+import com.example.ev2_master_martini.viewmodel.InterestsViewModel
+import com.example.ev2_master_martini.viewmodel.LoginViewModel
+import com.example.ev2_master_martini.viewmodel.ProfileViewModel
 import com.example.ev2_master_martini.viewmodel.RegisterViewModel
 
 @Composable
@@ -23,13 +28,52 @@ fun AppNavHost(
     navController: NavHostController,
     startDestination: String = AppRoute.Splash.route
 ) {
+    fun navigateToMain(route: String) {
+        navController.navigate(route) {
+            popUpTo(AppRoute.Home.route) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
         composable(AppRoute.Splash.route) {
             SplashScreen(
-                onContinue = {
+                onFinished = {
+                    navController.navigate(AppRoute.Login.route) {
+                        popUpTo(AppRoute.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(AppRoute.Login.route) {
+            val loginViewModel: LoginViewModel = viewModel()
+            val state by loginViewModel.uiState.collectAsState()
+
+            LaunchedEffect(state.loginSuccess) {
+                if (state.loginSuccess) {
+                    navController.navigate(AppRoute.Interest.route) {
+                        popUpTo(AppRoute.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            }
+
+            LoginScreen(
+                state = state,
+                onEmailChange = loginViewModel::onEmailChange,
+                onPasswordChange = loginViewModel::onPasswordChange,
+                onLogin = loginViewModel::login,
+                onRegister = {
                     navController.navigate(AppRoute.Register.route)
                 }
             )
@@ -39,43 +83,71 @@ fun AppNavHost(
             val registerViewModel: RegisterViewModel = viewModel()
             val state by registerViewModel.uiState.collectAsState()
 
-            RegisterScreen(
-                state = state,
-                onNameChange = registerViewModel::onNameChange,
-                onEmailChange = registerViewModel::onEmailChange,
-                onPhoneChange = registerViewModel::onPhoneChange,
-                onAddressChange = registerViewModel::onAddressChange,
-                onRutChange = registerViewModel::onRutChange,
-                onContinue = {
-                    if (registerViewModel.validate()) {
-                        navController.navigate(AppRoute.Interest.route)
-                    }
-                }
-            )
-        }
-
-        composable(AppRoute.Interest.route) {
-            InterestsScreen(
-                onContinue = {
-                    navController.navigate(AppRoute.Home.route) {
-                        popUpTo(AppRoute.Splash.route) {
+            LaunchedEffect(state.registrationSaved) {
+                if (state.registrationSaved) {
+                    navController.navigate(AppRoute.Login.route) {
+                        popUpTo(AppRoute.Register.route) {
                             inclusive = true
                         }
                     }
                 }
+            }
+
+            RegisterScreen(
+                state = state,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onNameChange = registerViewModel::onNameChange,
+                onEmailChange = registerViewModel::onEmailChange,
+                onPhoneCountryCodeChange =
+                    registerViewModel::onPhoneCountryCodeChange,
+                onPhoneNumberChange =
+                    registerViewModel::onPhoneNumberChange,
+                onAddressChange = registerViewModel::onAddressChange,
+                onRutChange = registerViewModel::onRutChange,
+                onPasswordChange = registerViewModel::onPasswordChange,
+                onConfirmPasswordChange = registerViewModel::onConfirmPasswordChange,
+                onContinue = registerViewModel::saveRegistration
+            )
+        }
+
+        composable(AppRoute.Interest.route) {
+            val interestsViewModel: InterestsViewModel = viewModel()
+            val state by interestsViewModel.uiState.collectAsState()
+
+            LaunchedEffect(state.interestsSaved) {
+                if (state.interestsSaved) {
+                    navController.navigate(AppRoute.Home.route) {
+                        popUpTo(AppRoute.Interest.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            }
+
+            InterestsScreen(
+                state = state,
+                onBusinessTypeSelected =
+                    interestsViewModel::onBusinessTypeSelected,
+                onBusinessSizeSelected =
+                    interestsViewModel::onBusinessSizeSelected,
+                onCatalogOptionToggle =
+                    interestsViewModel::onCatalogOptionToggle,
+                onContinue = interestsViewModel::saveInterests
             )
         }
 
         composable(AppRoute.Home.route) {
             HomeScreen(
                 onCatalogClick = {
-                    navController.navigate(AppRoute.Catalog.route)
+                    navigateToMain(AppRoute.Catalog.route)
                 },
                 onEventsClick = {
-                    navController.navigate(AppRoute.Events.route)
+                    navigateToMain(AppRoute.Events.route)
                 },
                 onProfileClick = {
-                    navController.navigate(AppRoute.Profile.route)
+                    navigateToMain(AppRoute.Profile.route)
                 }
             )
         }
@@ -87,6 +159,15 @@ fun AppNavHost(
                 },
                 onContentClick = {
                     navController.navigate(AppRoute.ContentDetail.route)
+                },
+                onHomeClick = {
+                    navigateToMain(AppRoute.Home.route)
+                },
+                onEventsClick = {
+                    navigateToMain(AppRoute.Events.route)
+                },
+                onProfileClick = {
+                    navigateToMain(AppRoute.Profile.route)
                 }
             )
         }
@@ -114,14 +195,36 @@ fun AppNavHost(
             EventsScreen(
                 onBack = {
                     navController.popBackStack()
+                },
+                onHomeClick = {
+                    navigateToMain(AppRoute.Home.route)
+                },
+                onCatalogClick = {
+                    navigateToMain(AppRoute.Catalog.route)
+                },
+                onProfileClick = {
+                    navigateToMain(AppRoute.Profile.route)
                 }
             )
         }
 
         composable(AppRoute.Profile.route) {
+            val profileViewModel: ProfileViewModel = viewModel()
+            val profileState by profileViewModel.uiState.collectAsState()
+
             ProfileScreen(
+                state = profileState,
                 onBack = {
                     navController.popBackStack()
+                },
+                onHomeClick = {
+                    navigateToMain(AppRoute.Home.route)
+                },
+                onCatalogClick = {
+                    navigateToMain(AppRoute.Catalog.route)
+                },
+                onEventsClick = {
+                    navigateToMain(AppRoute.Events.route)
                 }
             )
         }
