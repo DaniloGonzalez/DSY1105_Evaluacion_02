@@ -2,6 +2,7 @@ package com.example.ev2_master_martini.navigation
 
 sealed class AppRoute(val route: String){
     data object Splash : AppRoute("splash")
+    data object Login : AppRoute("login")
     data object Register : AppRoute("register")
     data object Interest : AppRoute("interests")
     data object Home: AppRoute("home")
