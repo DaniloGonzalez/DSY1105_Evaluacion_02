@@ -24,7 +24,7 @@ fun HomeScreen(
     onProfileClick: () -> Unit
 ) {
     Scaffold(
-        bottomBar = {
+        topBar = {
             AppBottomBar(
                 selectedRoute = AppRoute.Home.route,
                 onHomeClick = {},
