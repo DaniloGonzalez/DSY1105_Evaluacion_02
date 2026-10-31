@@ -56,4 +56,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
 }

@@ -2,12 +2,20 @@ package com.example.ev2_master_martini.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -86,11 +94,28 @@ fun ContactSalesScreen(
                 Text("Enviar correo")
             }
 
-            if (requestSent) {
-                Text(
-                    text = "Solicitud enviada correctamente.",
-                    color = MaterialTheme.colorScheme.primary
-                )
+            // CAMBIO REALIZADO (animaciones funcionales): el mensaje de éxito se
+            // muestra con una animación de aparición (fade + scale + expand),
+            // entregando retroalimentación visual clara al usuario.
+            AnimatedVisibility(
+                visible = requestSent,
+                enter = fadeIn() + scaleIn() + expandVertically()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Solicitud enviada correctamente.",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }
