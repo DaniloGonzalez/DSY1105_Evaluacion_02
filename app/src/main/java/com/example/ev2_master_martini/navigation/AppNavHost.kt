@@ -1,5 +1,10 @@
 package com.example.ev2_master_martini.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,6 +29,7 @@ import com.example.ev2_master_martini.ui.screens.RecipesScreen
 import com.example.ev2_master_martini.ui.screens.RegisterScreen
 import com.example.ev2_master_martini.ui.screens.SplashScreen
 import com.example.ev2_master_martini.data.UserRepository
+import com.example.ev2_master_martini.viewmodel.HomeViewModel
 import com.example.ev2_master_martini.viewmodel.InterestsViewModel
 import com.example.ev2_master_martini.viewmodel.LoginViewModel
 import com.example.ev2_master_martini.viewmodel.ProfileViewModel
@@ -47,7 +53,20 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        // Transiciones de navegación (animaciones funcionales)
+        enterTransition = {
+            fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 }
+        },
+        exitTransition = {
+            fadeOut(tween(200)) + slideOutVertically(tween(200)) { -it / 8 }
+        },
+        popEnterTransition = {
+            fadeIn(tween(300)) + slideInVertically(tween(300)) { -it / 8 }
+        },
+        popExitTransition = {
+            fadeOut(tween(200)) + slideOutVertically(tween(200)) { it / 4 }
+        }
     ) {
         composable(AppRoute.Splash.route) {
             val context = LocalContext.current
@@ -173,7 +192,13 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Home.route) {
+            // CAMBIO REALIZADO: HomeScreen ahora usa HomeViewModel para el
+            // dashboard personalizado (recomendaciones + eventos).
+            val homeViewModel: HomeViewModel = viewModel()
+            val state by homeViewModel.uiState.collectAsState()
+
             HomeScreen(
+                state = state,
                 onCatalogClick = {
                     navigateToMain(AppRoute.Catalog.route)
                 },
@@ -182,6 +207,14 @@ fun AppNavHost(
                 },
                 onProfileClick = {
                     navigateToMain(AppRoute.Profile.route)
+                },
+                onRecommendationClick = {
+                    navigateToMain(AppRoute.Catalog.route)
+                },
+                onEventClick = { eventId ->
+                    navController.navigate(
+                        "${AppRoute.EventDetail.route}/$eventId"
+                    )
                 }
             )
         }
@@ -196,6 +229,9 @@ fun AppNavHost(
                 },
                 onHomeClick = {
                     navigateToMain(AppRoute.Home.route)
+                },
+                onEventsClick = {
+                    navigateToMain(AppRoute.Events.route)
                 },
                 onRecipesClick = {
                     navigateToMain(AppRoute.Recipes.route)
@@ -217,6 +253,9 @@ fun AppNavHost(
                 onCatalogClick = {
                     navigateToMain(AppRoute.Catalog.route)
                 },
+                onEventsClick = {
+                    navigateToMain(AppRoute.Events.route)
+                },
                 onProfileClick = {
                     navigateToMain(AppRoute.Profile.route)
                 },
@@ -233,6 +272,9 @@ fun AppNavHost(
                 recipeId = backStackEntry.arguments?.getString("recipeId").orEmpty(),
                 onBack = {
                     navController.popBackStack()
+                },
+                onContactSales = {
+                    navController.navigate(AppRoute.ContactSales.route)
                 }
             )
         }
@@ -267,6 +309,7 @@ fun AppNavHost(
                 onCatalogClick = {
                     navigateToMain(AppRoute.Catalog.route)
                 },
+                onEventsClick = {},
                 onProfileClick = {
                     navigateToMain(AppRoute.Profile.route)
                 },
@@ -302,6 +345,22 @@ fun AppNavHost(
                 onCatalogClick = {
                     navigateToMain(AppRoute.Catalog.route)
                 },
+                onEventsClick = {
+                    navigateToMain(AppRoute.Events.route)
+                },
+                onNameChange = profileViewModel::onNameChange,
+                onEmailChange = profileViewModel::onEmailChange,
+                onPhoneChange = profileViewModel::onPhoneChange,
+                onAddressChange = profileViewModel::onAddressChange,
+                onRutChange = profileViewModel::onRutChange,
+                onBusinessTypeChange = profileViewModel::onBusinessTypeChange,
+                onBusinessSizeChange = profileViewModel::onBusinessSizeChange,
+                onCatalogOptionToggle = profileViewModel::onCatalogOptionToggle,
+                onSaveAccount = {
+                    profileViewModel.saveAccount {}
+                },
+                onSaveInterests = profileViewModel::saveInterests,
+                onLargeTextChange = profileViewModel::onLargeTextChange,
                 onLogout = {
                     profileViewModel.logout {
                         navController.navigate(AppRoute.Login.route) {

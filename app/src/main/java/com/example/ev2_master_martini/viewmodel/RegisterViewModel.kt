@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.ev2_master_martini.data.UserRepository
 import com.example.ev2_master_martini.model.RegisterUiState
 import com.example.ev2_master_martini.model.UserAccount
+import com.example.ev2_master_martini.util.PasswordUtils
 import com.example.ev2_master_martini.util.ValidationUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -134,7 +135,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                     UserAccount(
                         name = current.name.trim(),
                         email = current.email.trim(),
-                        password = current.password,
+                        password = PasswordUtils.hashPassword(current.password),
                         phone = current.phone,
                         address = current.address.trim(),
                         rut = current.rut.trim()

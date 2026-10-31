@@ -9,5 +9,13 @@ data class ProfileUiState(
     val rut: String = "",
     val businessType: String = "",
     val businessSize: String = "",
-    val catalogOptions: Set<String> = emptySet()
+    val catalogOptions: Set<String> = emptySet(),
+    val nameError: String? = null,
+    val emailError: String? = null,
+    val phoneError: String? = null,
+    val addressError: String? = null,
+    val rutError: String? = null,
+    val isSaving: Boolean = false,
+    val saveMessage: String? = null,
+    val largeTextEnabled: Boolean = false
 )

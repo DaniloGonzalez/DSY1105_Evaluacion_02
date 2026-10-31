@@ -29,6 +29,8 @@ class UserRepository(
         val businessSize = stringPreferencesKey("business_size")
         val catalogOptions = stringPreferencesKey("catalog_options")
         val sessionActive = booleanPreferencesKey("session_active")
+
+        val largeText = booleanPreferencesKey("large_text")
     }
 
     suspend fun saveAccount(account: UserAccount) {
@@ -36,6 +38,21 @@ class UserRepository(
             preferences[Keys.name] = account.name
             preferences[Keys.email] = account.email
             preferences[Keys.password] = account.password
+            preferences[Keys.phone] = account.phone
+            preferences[Keys.address] = account.address
+            preferences[Keys.rut] = account.rut
+        }
+    }
+
+    /**
+     * CAMBIO REALIZADO (perfil editable): actualiza únicamente los campos de
+     * contacto (sin tocar la contraseña almacenada). Se usa cuando el usuario
+     * edita "Mi perfil".
+     */
+    suspend fun updateAccount(account: UserAccount) {
+        context.userDataStore.edit { preferences ->
+            preferences[Keys.name] = account.name
+            preferences[Keys.email] = account.email
             preferences[Keys.phone] = account.phone
             preferences[Keys.address] = account.address
             preferences[Keys.rut] = account.rut
@@ -72,6 +89,18 @@ class UserRepository(
         }
     }
 
+    /**
+     * CAMBIO REALIZADO (perfil editable): actualiza el tipo de negocio, tamaño
+     * y preferencias de catálogo del usuario.
+     */
+    suspend fun updateInterests(interests: UserInterests) {
+        context.userDataStore.edit { preferences ->
+            preferences[Keys.businessType] = interests.businessType
+            preferences[Keys.businessSize] = interests.businessSize
+            preferences[Keys.catalogOptions] = interests.catalogOptions.joinToString("|||")
+        }
+    }
+
     fun getInterests(): Flow<UserInterests?> {
         return context.userDataStore.data.map { preferences ->
             val options = preferences[Keys.catalogOptions]
@@ -85,6 +114,22 @@ class UserRepository(
                 businessSize = preferences[Keys.businessSize].orEmpty(),
                 catalogOptions = options
             )
+        }
+    }
+
+    // ---- Accesibilidad: modo de texto grande ----
+
+    /** Flujo que indica si el usuario activó el modo de texto grande. */
+    fun isLargeText(): Flow<Boolean> {
+        return context.userDataStore.data.map { preferences ->
+            preferences[Keys.largeText] ?: false
+        }
+    }
+
+    /** Persiste la preferencia del modo de texto grande. */
+    suspend fun setLargeText(enabled: Boolean) {
+        context.userDataStore.edit { preferences ->
+            preferences[Keys.largeText] = enabled
         }
     }
 

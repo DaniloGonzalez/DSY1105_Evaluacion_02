@@ -32,6 +32,13 @@ fun EventDetailScreen(
             description = "Conoce los nuevos productos e insumos disponibles para tus preparaciones.",
             availability = "Actividad abierta"
         )
+        "feria_pasteleria" -> EventDetail(
+            title = "Feria de pastelería",
+            date = "5 de diciembre",
+            location = "Santiago, Chile",
+            description = "Encuentro con proveedores y especialistas del rubro gastronómico.",
+            availability = "Inscripción abierta"
+        )
         else -> EventDetail(
             title = "Taller de chocolatería",
             date = "15 de noviembre",
