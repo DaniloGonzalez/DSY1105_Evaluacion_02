@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Ev2_Master_Martini" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- CAMBIO REALIZADO (identidad visual corporativa):
+         Se definen temas del sistema con los colores de marca Master Martini
+         (vino/dorado), en vez del tema Material genérico por defecto.
+         Estos estilos se aplican antes de que Compose tome el control. -->
+    <style name="Theme.Ev2_Master_Martini" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/martini_burgundy_dark</item>
+        <item name="android:navigationBarColor">@color/martini_cream</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorAccent">@color/martini_wine</item>
+    </style>
 </resources>

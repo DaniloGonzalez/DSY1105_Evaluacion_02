@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ev2_master_martini.data.UserRepository
 import com.example.ev2_master_martini.model.LoginUIState
+import com.example.ev2_master_martini.util.PasswordUtils
 import com.example.ev2_master_martini.util.ValidationUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +47,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 if (
                     account != null &&
                     account.email.equals(current.email.trim(), ignoreCase = true) &&
-                    account.password == current.password
+                    PasswordUtils.matches(current.password, account.password)
                 ) {
                     userRepository.setSessionActive(true)
                     _uiState.update {

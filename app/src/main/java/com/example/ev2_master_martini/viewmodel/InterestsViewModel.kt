@@ -82,16 +82,30 @@ class InterestsViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun validate(): Boolean {
-        val error = if (_uiState.value.selectedCatalogOptions.isEmpty()) {
+        val current = _uiState.value
+
+        val businessTypeError = if (current.businessType.isBlank()) {
+            "Selecciona un tipo de negocio"
+        } else null
+
+        val businessSizeError = if (current.businessSize.isBlank()) {
+            "Selecciona el tamaño de tu negocio"
+        } else null
+
+        val catalogError = if (current.selectedCatalogOptions.isEmpty()) {
             "Selecciona al menos una opción del catálogo"
-        } else {
-            null
-        }
+        } else null
 
         _uiState.update {
-            it.copy(catalogError = error)
+            it.copy(
+                businessTypeError = businessTypeError,
+                businessSizeError = businessSizeError,
+                catalogError = catalogError
+            )
         }
 
-        return error == null
+        return businessTypeError == null &&
+                businessSizeError == null &&
+                catalogError == null
     }
 }
