@@ -4,6 +4,8 @@ data class InterestsUiState(
     val businessType: String = "",
     val businessSize: String = "",
     val selectedCatalogOptions: Set<String> = emptySet(),
+    val businessTypeError: String? = null,
+    val businessSizeError: String? = null,
     val catalogError: String? = null,
     val isSaving: Boolean = false,
     val saveError: String? = null,

@@ -1,3 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Ev2_Master_Martini</string>
+    <!-- CAMBIO REALIZADO (identidad visual corporativa):
+         Nombre visible de la aplicación pasa a ser "Master Martini"
+         (antes era el nombre técnico del proyecto "Ev2_Master_Martini"). -->
+    <string name="app_name">Master Martini</string>
+
+    <!-- Textos de marca usados en la interfaz. Centralizados para facilitar
+         mantenibilidad y futuras traducciones (accesibilidad i18n). -->
+    <string name="tagline">Contenido para negocios gastronómicos</string>
+    <string name="contact_sales">Solicitar asesoría</string>
+    <string name="back_home">Volver al inicio</string>
 </resources>

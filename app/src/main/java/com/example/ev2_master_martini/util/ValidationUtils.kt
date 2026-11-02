@@ -1,11 +1,13 @@
 package com.example.ev2_master_martini.util
 
-import android.util.Patterns
-
 object ValidationUtils {
 
+    private val EMAIL_REGEX = Regex(
+        "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    )
+
     fun isValidEmail(value: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(value.trim()).matches()
+        return EMAIL_REGEX.matches(value.trim())
     }
 
     fun isValidPhoneNumber(countryCode: String, number: String): Boolean {
