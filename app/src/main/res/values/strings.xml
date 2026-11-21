@@ -10,4 +10,12 @@
     <string name="tagline">Contenido para negocios gastronómicos</string>
     <string name="contact_sales">Solicitar asesoría</string>
     <string name="back_home">Volver al inicio</string>
+
+    <!-- CAMBIO REALIZADO (centralización de textos / accesibilidad):
+         textos reutilizados por componentes de navegación. -->
+    <string name="action_back">Volver</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_catalog">Contenidos</string>
+    <string name="nav_events">Eventos</string>
+    <string name="nav_profile">Mi perfil</string>
 </resources>

@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -24,13 +22,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ev2_master_martini.R
+import com.example.ev2_master_martini.model.EventInfo
 import com.example.ev2_master_martini.navigation.AppRoute
 import com.example.ev2_master_martini.ui.components.AppBottomBar
 import com.example.ev2_master_martini.ui.components.AppTopBar
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
 
+/**
+ * CAMBIO REALIZADO:
+ * 1. (separación de responsabilidades) los eventos llegan desde
+ *    EventsViewModel; la pantalla no los conoce.
+ * 2. (Mejora 1) se elimina el botón "Volver" inferior redundante: el retroceso
+ *    queda solo en la barra superior.
+ */
 @Composable
 fun EventsScreen(
+    events: List<EventInfo>,
     onBack: () -> Unit,
     onHomeClick: () -> Unit,
     onCatalogClick: () -> Unit,
@@ -50,7 +58,7 @@ fun EventsScreen(
                 selectedRoute = AppRoute.Events.route,
                 onHomeClick = onHomeClick,
                 onCatalogClick = onCatalogClick,
-                onEventsClick = {},
+                onEventsClick = onEventsClick,
                 onProfileClick = onProfileClick
             )
         }
@@ -70,32 +78,11 @@ fun EventsScreen(
 
             Text("Revisa las próximas actividades de Master Martini.")
 
-            EventCard(
-                title = "Taller de chocolatería",
-                description = "Conoce nuevas técnicas para trabajar con chocolate.",
-                availability = "Cupos disponibles",
-                onClick = { onEventClick("taller_chocolateria") }
-            )
-
-            EventCard(
-                title = "Novedades de productos",
-                description = "Descubre nuevos insumos para tus preparaciones.",
-                availability = "Ver novedades",
-                onClick = { onEventClick("novedades_productos") }
-            )
-
-            EventCard(
-                title = "Feria de pastelería",
-                description = "Encuentro con proveedores y especialistas del rubro.",
-                availability = "Inscripción abierta",
-                onClick = { onEventClick("feria_pasteleria") }
-            )
-
-            Button(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Volver")
+            events.forEach { event ->
+                EventCard(
+                    event = event,
+                    onClick = { onEventClick(event.id) }
+                )
             }
         }
     }
@@ -103,9 +90,7 @@ fun EventsScreen(
 
 @Composable
 private fun EventCard(
-    title: String,
-    description: String,
-    availability: String,
+    event: EventInfo,
     onClick: () -> Unit
 ) {
     Card(
@@ -121,10 +106,8 @@ private fun EventCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(
-                    id = com.example.ev2_master_martini.R.drawable.miniatura_evento
-                ),
-                contentDescription = "Miniatura del evento $title",
+                painter = painterResource(id = R.drawable.miniatura_evento),
+                contentDescription = "Miniatura del evento ${event.title}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(width = 120.dp, height = 72.dp)
             )
@@ -134,15 +117,15 @@ private fun EventCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = title,
+                    text = event.title,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = description,
+                    text = event.description,
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = availability,
+                    text = event.availability,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -161,6 +144,16 @@ private fun EventCard(
 fun EventsScreenPreview() {
     Ev2_Master_MartiniTheme {
         EventsScreen(
+            events = listOf(
+                EventInfo(
+                    id = "taller_chocolateria",
+                    title = "Taller de chocolatería",
+                    date = "15 de noviembre",
+                    location = "Santiago, Chile",
+                    description = "Conoce nuevas técnicas para trabajar con chocolate.",
+                    availability = "Cupos disponibles"
+                )
+            ),
             onBack = {},
             onHomeClick = {},
             onCatalogClick = {},

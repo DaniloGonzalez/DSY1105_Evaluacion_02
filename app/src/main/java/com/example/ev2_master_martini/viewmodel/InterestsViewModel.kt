@@ -1,7 +1,6 @@
 package com.example.ev2_master_martini.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ev2_master_martini.data.UserRepository
 import com.example.ev2_master_martini.model.InterestsUiState
@@ -11,9 +10,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class InterestsViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val userRepository = UserRepository(application)
+/**
+ * CAMBIO REALIZADO (separación de responsabilidades):
+ * Recibe el repositorio por constructor (inyección de dependencias) en lugar de
+ * construirlo con el contexto de la aplicación.
+ */
+class InterestsViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InterestsUiState())
     val uiState = _uiState.asStateFlow()
@@ -105,7 +109,7 @@ class InterestsViewModel(application: Application) : AndroidViewModel(applicatio
         }
 
         return businessTypeError == null &&
-                businessSizeError == null &&
-                catalogError == null
+            businessSizeError == null &&
+            catalogError == null
     }
 }

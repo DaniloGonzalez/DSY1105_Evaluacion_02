@@ -7,11 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.example.ev2_master_martini.data.UserRepository
 import com.example.ev2_master_martini.navigation.AppNavHost
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
+import com.example.ev2_master_martini.viewmodel.SettingsViewModel
+import com.example.ev2_master_martini.viewmodel.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -20,16 +21,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            // CAMBIO REALIZADO (accesibilidad "Modo texto grande"):
-            // Se lee la preferencia del usuario desde DataStore. Si está
-            // activa, el tema escala la tipografía (fontScale = 1.3f),
-            // beneficiando a usuarios con dificultades visuales o baja
-            // alfabetización digital (perfil del caso Master Martini).
-            val context = LocalContext.current
-            val repository = remember(context) {
-                UserRepository(context.applicationContext)
-            }
-            val largeText by repository.isLargeText().collectAsState(initial = false)
+            // CAMBIO REALIZADO (separación de responsabilidades):
+            // La Activity ya no lee DataStore directamente. La preferencia de
+            // accesibilidad (texto grande) la expone SettingsViewModel, obtenido
+            // a través del AppContainer (inyección de dependencias).
+            val container = (application as MasterMartiniApp).container
+            val factory = remember { ViewModelFactory(container) }
+            val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
+            val largeText by settingsViewModel.largeText.collectAsState(initial = false)
 
             Ev2_Master_MartiniTheme(
                 fontScale = if (largeText) 1.3f else 1f
@@ -37,7 +36,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 AppNavHost(
-                    navController = navController
+                    navController = navController,
+                    container = container
                 )
             }
         }

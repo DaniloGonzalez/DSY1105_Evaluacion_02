@@ -11,9 +11,16 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.RowScope
+import com.example.ev2_master_martini.R
 import com.example.ev2_master_martini.navigation.AppRoute
 
+/**
+ * CAMBIO REALIZADO (centralización de textos):
+ * Las etiquetas de la barra inferior se toman de strings.xml en lugar de estar
+ * hardcodeadas en el componente.
+ */
 @Composable
 fun AppBottomBar(
     selectedRoute: String,
@@ -24,33 +31,33 @@ fun AppBottomBar(
 ) {
     NavigationBar {
         NavItem(
-            label = "Inicio",
+            label = stringResource(R.string.nav_home),
             icon = Icons.Filled.Home,
-            contentDescription = "Ir a inicio",
+            contentDescription = stringResource(R.string.nav_home),
             selected = selectedRoute == AppRoute.Home.route,
             onClick = onHomeClick
         )
 
         NavItem(
-            label = "Contenidos",
+            label = stringResource(R.string.nav_catalog),
             icon = Icons.AutoMirrored.Filled.MenuBook,
-            contentDescription = "Ir al catálogo de contenidos",
+            contentDescription = stringResource(R.string.nav_catalog),
             selected = selectedRoute == AppRoute.Catalog.route,
             onClick = onCatalogClick
         )
 
         NavItem(
-            label = "Eventos",
+            label = stringResource(R.string.nav_events),
             icon = Icons.Filled.Event,
-            contentDescription = "Ir a eventos y novedades",
+            contentDescription = stringResource(R.string.nav_events),
             selected = selectedRoute == AppRoute.Events.route,
             onClick = onEventsClick
         )
 
         NavItem(
-            label = "Mi perfil",
+            label = stringResource(R.string.nav_profile),
             icon = Icons.Filled.Person,
-            contentDescription = "Ir a mi perfil",
+            contentDescription = stringResource(R.string.nav_profile),
             selected = selectedRoute == AppRoute.Profile.route,
             onClick = onProfileClick
         )

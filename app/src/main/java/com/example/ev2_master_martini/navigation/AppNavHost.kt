@@ -10,11 +10,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.ev2_master_martini.data.AppContainer
+import com.example.ev2_master_martini.model.StartDestination
 import com.example.ev2_master_martini.ui.screens.CatalogScreen
 import com.example.ev2_master_martini.ui.screens.ContactSalesScreen
 import com.example.ev2_master_martini.ui.screens.ContentDetailScreen
@@ -28,19 +29,34 @@ import com.example.ev2_master_martini.ui.screens.RecipeDetailScreen
 import com.example.ev2_master_martini.ui.screens.RecipesScreen
 import com.example.ev2_master_martini.ui.screens.RegisterScreen
 import com.example.ev2_master_martini.ui.screens.SplashScreen
-import com.example.ev2_master_martini.data.UserRepository
+import com.example.ev2_master_martini.viewmodel.CatalogViewModel
+import com.example.ev2_master_martini.viewmodel.EventsViewModel
 import com.example.ev2_master_martini.viewmodel.HomeViewModel
 import com.example.ev2_master_martini.viewmodel.InterestsViewModel
 import com.example.ev2_master_martini.viewmodel.LoginViewModel
 import com.example.ev2_master_martini.viewmodel.ProfileViewModel
+import com.example.ev2_master_martini.viewmodel.RecipesViewModel
 import com.example.ev2_master_martini.viewmodel.RegisterViewModel
-import kotlinx.coroutines.flow.first
+import com.example.ev2_master_martini.viewmodel.SplashViewModel
+import com.example.ev2_master_martini.viewmodel.ViewModelFactory
 
+/**
+ * CAMBIO REALIZADO (separación de responsabilidades):
+ * El NavHost ya no lee DataStore. Recibe el [AppContainer] y construye los
+ * ViewModel a través de [ViewModelFactory]; toda decisión de negocio (destino
+ * de entrada, post-login, contenido del catálogo/recetas/eventos) la resuelven
+ * los ViewModel / repositorios.
+ */
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    container: AppContainer,
     startDestination: String = AppRoute.Splash.route
 ) {
+    val factory = remember(container) {
+        ViewModelFactory(container)
+    }
+
     fun navigateToMain(route: String) {
         navController.navigate(route) {
             popUpTo(AppRoute.Home.route) {
@@ -69,51 +85,31 @@ fun AppNavHost(
         }
     ) {
         composable(AppRoute.Splash.route) {
-            val context = LocalContext.current
-            val repository = remember(context) {
-                UserRepository(context.applicationContext)
-            }
-            val sessionActive by repository.isSessionActive().collectAsState(initial = false)
-            val interests by repository.getInterests().collectAsState(initial = null)
+            val splashViewModel: SplashViewModel = viewModel(factory = factory)
+            val destination by splashViewModel.destination.collectAsState()
 
-            SplashScreen(
-                onFinished = {
-                    val destination = when {
-                        sessionActive && !interests?.catalogOptions.isNullOrEmpty() ->
-                            AppRoute.Home.route
-                        sessionActive -> AppRoute.Interest.route
-                        else -> AppRoute.Login.route
-                    }
-
-                    navController.navigate(destination) {
+            LaunchedEffect(destination) {
+                destination?.let { resolved ->
+                    navController.navigate(routeFor(resolved)) {
                         popUpTo(AppRoute.Splash.route) {
                             inclusive = true
                         }
                     }
                 }
+            }
+
+            SplashScreen(
+                onFinished = splashViewModel::resolveStartDestination
             )
         }
 
         composable(AppRoute.Login.route) {
-            val context = LocalContext.current
-            val repository = remember(context) {
-                UserRepository(context.applicationContext)
-            }
-            val loginViewModel: LoginViewModel = viewModel()
+            val loginViewModel: LoginViewModel = viewModel(factory = factory)
             val state by loginViewModel.uiState.collectAsState()
 
-            LaunchedEffect(state.loginSuccess) {
-                if (state.loginSuccess) {
-                    val hasInterests = repository.getInterests().first()
-                        ?.catalogOptions
-                        ?.isNotEmpty() == true
-                    val destination = if (hasInterests) {
-                        AppRoute.Home.route
-                    } else {
-                        AppRoute.Interest.route
-                    }
-
-                    navController.navigate(destination) {
+            LaunchedEffect(state.postLoginDestination) {
+                state.postLoginDestination?.let { resolved ->
+                    navController.navigate(routeFor(resolved)) {
                         popUpTo(AppRoute.Login.route) {
                             inclusive = true
                         }
@@ -133,7 +129,7 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Register.route) {
-            val registerViewModel: RegisterViewModel = viewModel()
+            val registerViewModel: RegisterViewModel = viewModel(factory = factory)
             val state by registerViewModel.uiState.collectAsState()
 
             LaunchedEffect(state.registrationSaved) {
@@ -166,7 +162,7 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Interest.route) {
-            val interestsViewModel: InterestsViewModel = viewModel()
+            val interestsViewModel: InterestsViewModel = viewModel(factory = factory)
             val state by interestsViewModel.uiState.collectAsState()
 
             LaunchedEffect(state.interestsSaved) {
@@ -192,9 +188,7 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Home.route) {
-            // CAMBIO REALIZADO: HomeScreen ahora usa HomeViewModel para el
-            // dashboard personalizado (recomendaciones + eventos).
-            val homeViewModel: HomeViewModel = viewModel()
+            val homeViewModel: HomeViewModel = viewModel(factory = factory)
             val state by homeViewModel.uiState.collectAsState()
 
             HomeScreen(
@@ -220,7 +214,12 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Catalog.route) {
+            val catalogViewModel: CatalogViewModel = viewModel(factory = factory)
+            val state by catalogViewModel.uiState.collectAsState()
+
             CatalogScreen(
+                state = state,
+                onCategorySelected = catalogViewModel::onCategorySelected,
                 onBack = {
                     navController.popBackStack()
                 },
@@ -243,7 +242,10 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Recipes.route) {
+            val recipesViewModel: RecipesViewModel = viewModel(factory = factory)
+
             RecipesScreen(
+                recipes = recipesViewModel.getRecipes(),
                 onBack = {
                     navController.popBackStack()
                 },
@@ -268,8 +270,13 @@ fun AppNavHost(
         }
 
         composable("${AppRoute.RecipeDetail.route}/{recipeId}") { backStackEntry ->
+            val recipesViewModel: RecipesViewModel = viewModel(factory = factory)
+            val recipe = recipesViewModel.getRecipe(
+                backStackEntry.arguments?.getString("recipeId").orEmpty()
+            )
+
             RecipeDetailScreen(
-                recipeId = backStackEntry.arguments?.getString("recipeId").orEmpty(),
+                recipe = recipe,
                 onBack = {
                     navController.popBackStack()
                 },
@@ -299,7 +306,10 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Events.route) {
+            val eventsViewModel: EventsViewModel = viewModel(factory = factory)
+
             EventsScreen(
+                events = eventsViewModel.getEvents(),
                 onBack = {
                     navController.popBackStack()
                 },
@@ -322,8 +332,13 @@ fun AppNavHost(
         }
 
         composable("${AppRoute.EventDetail.route}/{eventId}") { backStackEntry ->
+            val eventsViewModel: EventsViewModel = viewModel(factory = factory)
+            val event = eventsViewModel.getEvent(
+                backStackEntry.arguments?.getString("eventId").orEmpty()
+            )
+
             EventDetailScreen(
-                eventId = backStackEntry.arguments?.getString("eventId").orEmpty(),
+                event = event,
                 onBack = {
                     navController.popBackStack()
                 }
@@ -331,7 +346,7 @@ fun AppNavHost(
         }
 
         composable(AppRoute.Profile.route) {
-            val profileViewModel: ProfileViewModel = viewModel()
+            val profileViewModel: ProfileViewModel = viewModel(factory = factory)
             val profileState by profileViewModel.uiState.collectAsState()
 
             ProfileScreen(
@@ -373,4 +388,11 @@ fun AppNavHost(
             )
         }
     }
+}
+
+/** Traduce el destino resuelto por los ViewModel a una ruta de navegación. */
+private fun routeFor(destination: StartDestination): String = when (destination) {
+    StartDestination.Home -> AppRoute.Home.route
+    StartDestination.Interests -> AppRoute.Interest.route
+    StartDestination.Login -> AppRoute.Login.route
 }

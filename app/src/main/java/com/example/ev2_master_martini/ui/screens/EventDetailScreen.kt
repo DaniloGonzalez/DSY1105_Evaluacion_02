@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -16,38 +15,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ev2_master_martini.model.EventInfo
 import com.example.ev2_master_martini.ui.components.AppTopBar
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
 
+/**
+ * CAMBIO REALIZADO:
+ * 1. (separación de responsabilidades) el evento llega como modelo desde
+ *    EventsViewModel; la pantalla no lo resuelve ni lo conoce.
+ * 2. (Mejora 1) se elimina el botón "Volver a eventos" inferior: el retroceso
+ *    queda solo en la barra superior.
+ */
 @Composable
 fun EventDetailScreen(
-    eventId: String,
+    event: EventInfo,
     onBack: () -> Unit
 ) {
-    val event = when (eventId) {
-        "novedades_productos" -> EventDetail(
-            title = "Novedades de productos",
-            date = "20 de noviembre",
-            location = "Centro de demostraciones Master Martini",
-            description = "Conoce los nuevos productos e insumos disponibles para tus preparaciones.",
-            availability = "Actividad abierta"
-        )
-        "feria_pasteleria" -> EventDetail(
-            title = "Feria de pastelería",
-            date = "5 de diciembre",
-            location = "Santiago, Chile",
-            description = "Encuentro con proveedores y especialistas del rubro gastronómico.",
-            availability = "Inscripción abierta"
-        )
-        else -> EventDetail(
-            title = "Taller de chocolatería",
-            date = "15 de noviembre",
-            location = "Santiago, Chile",
-            description = "Participa en un taller práctico para aprender nuevas técnicas de trabajo con chocolate.",
-            availability = "Cupos disponibles"
-        )
-    }
-
     Scaffold(
         topBar = {
             AppTopBar(
@@ -87,31 +70,23 @@ fun EventDetailScreen(
                     Text(event.availability)
                 }
             }
-
-            Button(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Volver a eventos")
-            }
         }
     }
 }
-
-private data class EventDetail(
-    val title: String,
-    val date: String,
-    val location: String,
-    val description: String,
-    val availability: String
-)
 
 @Preview(showBackground = true)
 @Composable
 fun EventDetailScreenPreview() {
     Ev2_Master_MartiniTheme {
         EventDetailScreen(
-            eventId = "taller_chocolateria",
+            event = EventInfo(
+                id = "taller_chocolateria",
+                title = "Taller de chocolatería",
+                date = "15 de noviembre",
+                location = "Santiago, Chile",
+                description = "Participa en un taller práctico.",
+                availability = "Cupos disponibles"
+            ),
             onBack = {}
         )
     }
