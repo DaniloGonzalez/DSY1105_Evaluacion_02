@@ -47,6 +47,12 @@ class ViewModelFactory(
             modelClass.isAssignableFrom(EventsViewModel::class.java) ->
                 EventsViewModel(container.eventsRepository)
 
+            modelClass.isAssignableFrom(InspirationViewModel::class.java) ->
+                InspirationViewModel(container.inspirationRepository)
+
+            modelClass.isAssignableFrom(InspirationDetailViewModel::class.java) ->
+                InspirationDetailViewModel(container.inspirationRepository)
+
             else -> throw IllegalArgumentException(
                 "ViewModel no soportado: ${modelClass.name}"
             )
