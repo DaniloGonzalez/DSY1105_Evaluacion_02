@@ -34,4 +34,10 @@ object NativeActions {
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
     }
+
+    /** Abre una URL en el navegador o app correspondiente (p. ej. YouTube). */
+    fun openUrl(context: Context, url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        context.startActivity(intent)
+    }
 }

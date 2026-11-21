@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.ev2_master_martini.data.AppContainer
+import com.example.ev2_master_martini.data.remote.NetworkLogStore
 import com.example.ev2_master_martini.model.StartDestination
 import com.example.ev2_master_martini.ui.screens.CatalogScreen
 import com.example.ev2_master_martini.ui.screens.ContactSalesScreen
@@ -22,6 +23,7 @@ import com.example.ev2_master_martini.ui.screens.ContentDetailScreen
 import com.example.ev2_master_martini.ui.screens.EventDetailScreen
 import com.example.ev2_master_martini.ui.screens.EventsScreen
 import com.example.ev2_master_martini.ui.screens.HomeScreen
+import com.example.ev2_master_martini.ui.screens.InspirationDetailScreen
 import com.example.ev2_master_martini.ui.screens.InterestsScreen
 import com.example.ev2_master_martini.ui.screens.LoginScreen
 import com.example.ev2_master_martini.ui.screens.ProfileScreen
@@ -32,6 +34,8 @@ import com.example.ev2_master_martini.ui.screens.SplashScreen
 import com.example.ev2_master_martini.viewmodel.CatalogViewModel
 import com.example.ev2_master_martini.viewmodel.EventsViewModel
 import com.example.ev2_master_martini.viewmodel.HomeViewModel
+import com.example.ev2_master_martini.viewmodel.InspirationDetailViewModel
+import com.example.ev2_master_martini.viewmodel.InspirationViewModel
 import com.example.ev2_master_martini.viewmodel.InterestsViewModel
 import com.example.ev2_master_martini.viewmodel.LoginViewModel
 import com.example.ev2_master_martini.viewmodel.ProfileViewModel
@@ -191,8 +195,17 @@ fun AppNavHost(
             val homeViewModel: HomeViewModel = viewModel(factory = factory)
             val state by homeViewModel.uiState.collectAsState()
 
+            // CAMBIO REALIZADO (integración de API externa - TheMealDB):
+            // ViewModel de la sección "Inspírate" y registros de red para la
+            // evidencia de las llamadas (chip de estado + Consola de red).
+            val inspirationViewModel: InspirationViewModel = viewModel(factory = factory)
+            val inspirationState by inspirationViewModel.uiState.collectAsState()
+            val networkCalls by NetworkLogStore.calls.collectAsState()
+
             HomeScreen(
                 state = state,
+                inspirationState = inspirationState,
+                networkCalls = networkCalls,
                 onCatalogClick = {
                     navigateToMain(AppRoute.Catalog.route)
                 },
@@ -209,7 +222,19 @@ fun AppNavHost(
                     navController.navigate(
                         "${AppRoute.EventDetail.route}/$eventId"
                     )
-                }
+                },
+                onInspirationQueryChange = inspirationViewModel::onQueryChange,
+                onInspirationSearch = inspirationViewModel::search,
+                onInspirationCategorySelected = inspirationViewModel::onCategorySelected,
+                onInspirationSurprise = inspirationViewModel::surpriseMe,
+                onInspirationRetry = inspirationViewModel::retry,
+                // CAMBIO REALIZADO (Parte 4): navegación al detalle de receta API.
+                onInspirationRecipeClick = { mealId ->
+                    navController.navigate(
+                        "${AppRoute.InspirationDetail.route}/$mealId"
+                    )
+                },
+                onClearNetworkLog = NetworkLogStore::clear
             )
         }
 
@@ -301,6 +326,30 @@ fun AppNavHost(
             ContactSalesScreen(
                 onBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        // CAMBIO REALIZADO (integración de API externa - TheMealDB):
+        // Detalle de una receta de la API usando lookup.php?i={id}.
+        composable("${AppRoute.InspirationDetail.route}/{mealId}") { backStackEntry ->
+            val mealId = backStackEntry.arguments?.getString("mealId").orEmpty()
+            val inspirationDetailViewModel: InspirationDetailViewModel =
+                viewModel(factory = factory)
+
+            LaunchedEffect(mealId) {
+                inspirationDetailViewModel.load(mealId)
+            }
+
+            val detailState by inspirationDetailViewModel.uiState.collectAsState()
+
+            InspirationDetailScreen(
+                state = detailState,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onRetry = {
+                    inspirationDetailViewModel.load(mealId)
                 }
             )
         }
