@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -58,4 +59,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
+
+    // CAMBIO REALIZADO (integración de API externa - TheMealDB):
+    // Retrofit + OkHttp + kotlinx.serialization para la capa de red, y Coil
+    // para cargar las imágenes remotas (strMealThumb).
+    implementation(libs.retrofit)
+    implementation(libs.serialization.converter)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.coil.compose)
 }

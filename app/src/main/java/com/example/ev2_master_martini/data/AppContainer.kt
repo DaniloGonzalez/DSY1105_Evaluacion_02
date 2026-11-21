@@ -1,6 +1,7 @@
 package com.example.ev2_master_martini.data
 
 import android.content.Context
+import com.example.ev2_master_martini.data.remote.ApiClient
 
 /**
  * CAMBIO REALIZADO (separación de responsabilidades):
@@ -18,4 +19,9 @@ class AppContainer(context: Context) {
     val recipesRepository: RecipesRepository = RecipesRepository()
     val eventsRepository: EventsRepository = EventsRepository()
     val homeRepository: HomeRepository = HomeRepository(eventsRepository)
+
+    // CAMBIO REALIZADO (integración de API externa - TheMealDB):
+    // Repositorio de la API externa, construido con el servicio Retrofit.
+    val inspirationRepository: InspirationRepository =
+        InspirationRepository(ApiClient.mealApiService)
 }
