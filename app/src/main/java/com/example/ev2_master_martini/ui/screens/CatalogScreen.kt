@@ -26,84 +26,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ev2_master_martini.model.CatalogCategory
+import com.example.ev2_master_martini.model.CatalogUiState
+import com.example.ev2_master_martini.model.ContentItem
 import com.example.ev2_master_martini.navigation.AppRoute
 import com.example.ev2_master_martini.ui.components.AppBottomBar
 import com.example.ev2_master_martini.ui.components.AppTopBar
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
 
-
-private enum class CatalogCategory(val label: String) {
-    All("Todos"),
-    Courses("Cursos"),
-    Recipes("Recetas"),
-    Videos("Videos técnicos")
-}
-
-private data class ContentItem(
-    val id: String,
-    val title: String,
-    val category: CatalogCategory,
-    val description: String,
-    val thumbnailRes: Int
-)
-
-private val mockContent = listOf(
-    ContentItem(
-        id = "curso_chocolateria",
-        title = "Curso de chocolatería",
-        category = CatalogCategory.Courses,
-        description = "Técnicas de templado, bombones y coberturas premium.",
-        thumbnailRes = com.example.ev2_master_martini.R.drawable.miniatura_curso
-    ),
-    ContentItem(
-        id = "curso_pasteleria_vitrina",
-        title = "Pastelería de vitrina",
-        category = CatalogCategory.Courses,
-        description = "Montaje y conservación de productos de vitrina.",
-        thumbnailRes = com.example.ev2_master_martini.R.drawable.miniatura_curso
-    ),
-    ContentItem(
-        id = "recetas_pasteleria",
-        title = "Recetas para pastelería",
-        category = CatalogCategory.Recipes,
-        description = "Tortas, brownies y mousses con productos Master Martini.",
-        thumbnailRes = com.example.ev2_master_martini.R.drawable.miniatura_receta
-    ),
-    ContentItem(
-        id = "recetas_horneo",
-        title = "Galletas, empanadas y horneo",
-        category = CatalogCategory.Recipes,
-        description = "Recetas simples para productos de panadería.",
-        thumbnailRes = com.example.ev2_master_martini.R.drawable.miniatura_receta
-    ),
-    ContentItem(
-        id = "videos_horneo",
-        title = "Videos técnicos de horneo",
-        category = CatalogCategory.Videos,
-        description = "Video técnico con el paso a paso de productos horneados.",
-        thumbnailRes = com.example.ev2_master_martini.R.drawable.miniatura_video
-    ),
-    ContentItem(
-        id = "videos_chocolateria",
-        title = "Videos técnicos de chocolatería",
-        category = CatalogCategory.Videos,
-        description = "Video demostrativo de técnicas con chocolate.",
-        thumbnailRes = com.example.ev2_master_martini.R.drawable.miniatura_video
-    )
-)
-
+/**
+ * CAMBIO REALIZADO (separación de responsabilidades):
+ * La pantalla ya no conoce ni filtra los datos. Recibe el estado desde
+ * CatalogViewModel (categoría seleccionada + ítems) y solo emite eventos de
+ * selección. Los ContentItem y las categorías provienen de la capa de datos.
+ */
 @Composable
 fun CatalogScreen(
+    state: CatalogUiState,
+    onCategorySelected: (CatalogCategory) -> Unit,
     onBack: () -> Unit,
     onContentClick: () -> Unit,
     onHomeClick: () -> Unit,
@@ -111,15 +57,6 @@ fun CatalogScreen(
     onRecipesClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    var selectedCategory by remember {
-        mutableStateOf(CatalogCategory.All)
-    }
-
-    val visibleContent = mockContent.filter { item ->
-        selectedCategory == CatalogCategory.All ||
-                item.category == selectedCategory
-    }
-
     Scaffold(
         topBar = {
             AppTopBar(
@@ -165,9 +102,9 @@ fun CatalogScreen(
             ) {
                 CatalogCategory.entries.forEach { category ->
                     FilterChip(
-                        selected = selectedCategory == category,
+                        selected = state.selectedCategory == category,
                         onClick = {
-                            selectedCategory = category
+                            onCategorySelected(category)
                         },
                         label = { Text(category.label) }
                     )
@@ -179,7 +116,7 @@ fun CatalogScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(visibleContent, key = { it.id }) { item ->
+                items(state.items, key = { it.id }) { item ->
                     AnimatedVisibility(
                         visible = true,
                         enter = fadeIn(tween(300)),
@@ -259,6 +196,8 @@ private fun ContentCard(
 fun CatalogScreenPreview() {
     Ev2_Master_MartiniTheme {
         CatalogScreen(
+            state = CatalogUiState(),
+            onCategorySelected = {},
             onBack = {},
             onContentClick = {},
             onHomeClick = {},

@@ -1,22 +1,27 @@
 package com.example.ev2_master_martini.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ev2_master_martini.data.UserRepository
+import com.example.ev2_master_martini.domain.UserValidator
 import com.example.ev2_master_martini.model.ProfileUiState
 import com.example.ev2_master_martini.model.UserAccount
 import com.example.ev2_master_martini.model.UserInterests
-import com.example.ev2_master_martini.util.ValidationUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val userRepository = UserRepository(application)
+/**
+ * CAMBIO REALIZADO (separación de responsabilidades):
+ * 1. Recibe el repositorio por constructor (inyección de dependencias).
+ * 2. Usa [UserValidator] para las validaciones, evitando duplicar la lógica
+ *    que ya existe en RegisterViewModel.
+ */
+class ProfileViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
@@ -107,33 +112,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private fun validateAccount(): Boolean {
         val current = _uiState.value
 
-        val nameError = if (current.name.trim().length < 3) {
-            "Ingresa un nombre válido"
-        } else null
-
-        val emailError = when {
-            current.email.isBlank() -> "Ingresa tu correo"
-            !ValidationUtils.isValidEmail(current.email) -> "Ingresa un correo válido"
-            else -> null
-        }
-
-        val phoneError = when {
-            current.phone.isBlank() -> "Ingresa tu teléfono"
-            !ValidationUtils.isValidChileanPhone(current.phone) ->
-                "Ingresa un número válido"
-            else -> null
-        }
-
-        val addressError = if (current.address.trim().length < 5) {
-            "Ingresa una dirección válida"
-        } else null
-
-        val rutError = when {
-            current.rut.isBlank() -> "Ingresa el RUT de empresa"
-            !ValidationUtils.isValidChileanRut(current.rut) ->
-                "Ingresa un RUT chileno válido"
-            else -> null
-        }
+        val nameError = UserValidator.nameError(current.name)
+        val emailError = UserValidator.emailError(current.email)
+        val phoneError = UserValidator.chileanPhoneError(current.phone)
+        val addressError = UserValidator.addressError(current.address)
+        val rutError = UserValidator.rutError(current.rut)
 
         _uiState.value = current.copy(
             nameError = nameError,

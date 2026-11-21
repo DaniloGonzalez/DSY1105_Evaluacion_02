@@ -1,11 +1,14 @@
 package com.example.ev2_master_martini.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 private val ColorRedWine = Color(0xFF9B2230)
@@ -60,9 +63,22 @@ fun Ev2_Master_MartiniTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = scaledTypography(fontScale),
-        content = content
-    )
+        typography = scaledTypography(fontScale)
+    ) {
+        // CAMBIO REALIZADO (corrección de contraste en modo oscuro):
+        // Se pinta un fondo tematizado para TODA la app. Las pantallas que no
+        // usan Scaffold (Login, Intereses, Splash) ya no quedan con el fondo
+        // claro de la ventana; además se fija el color de contenido
+        // (onBackground) para que los textos y campos tengan contraste correcto
+        // tanto en modo claro como oscuro.
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = colorScheme.background,
+            contentColor = colorScheme.onBackground
+        ) {
+            content()
+        }
+    }
 }
 
 private fun scaledTypography(fontScale: Float): androidx.compose.material3.Typography {

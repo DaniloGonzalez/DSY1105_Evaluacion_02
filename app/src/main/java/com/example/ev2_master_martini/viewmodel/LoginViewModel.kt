@@ -1,10 +1,10 @@
 package com.example.ev2_master_martini.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ev2_master_martini.data.UserRepository
 import com.example.ev2_master_martini.model.LoginUIState
+import com.example.ev2_master_martini.model.StartDestination
 import com.example.ev2_master_martini.util.PasswordUtils
 import com.example.ev2_master_martini.util.ValidationUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,9 +13,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val userRepository = UserRepository(application)
+/**
+ * CAMBIO REALIZADO (separación de responsabilidades):
+ * 1. Recibe el repositorio por constructor (inyección de dependencias).
+ * 2. Tras un login exitoso, decide el destino (Home o Intereses) según los
+ *    intereses guardados, de modo que el NavHost ya no lea la persistencia.
+ */
+class LoginViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUIState())
     val uiState = _uiState.asStateFlow()
@@ -50,8 +56,21 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     PasswordUtils.matches(current.password, account.password)
                 ) {
                     userRepository.setSessionActive(true)
+
+                    val hasInterests = userRepository.getInterests().first()
+                        ?.catalogOptions
+                        ?.isNotEmpty() == true
+
                     _uiState.update {
-                        it.copy(isLoading = false, loginSuccess = true)
+                        it.copy(
+                            isLoading = false,
+                            loginSuccess = true,
+                            postLoginDestination = if (hasInterests) {
+                                StartDestination.Home
+                            } else {
+                                StartDestination.Interests
+                            }
+                        )
                     }
                 } else {
                     _uiState.update {

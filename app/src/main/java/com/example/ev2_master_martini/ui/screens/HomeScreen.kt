@@ -28,17 +28,25 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ev2_master_martini.data.remote.NetworkCall
 import com.example.ev2_master_martini.model.HomeEvent
 import com.example.ev2_master_martini.model.HomeUiState
+import com.example.ev2_master_martini.model.InspirationUiState
 import com.example.ev2_master_martini.model.RecommendedContent
 import com.example.ev2_master_martini.navigation.AppRoute
 import com.example.ev2_master_martini.ui.components.AppBottomBar
+import com.example.ev2_master_martini.ui.components.NetworkConsoleSheet
+import com.example.ev2_master_martini.ui.screens.home.InspirationSection
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
 import com.example.ev2_master_martini.ui.theme.MartiniWine
 import com.example.ev2_master_martini.ui.theme.MartiniCream
@@ -46,12 +54,23 @@ import com.example.ev2_master_martini.ui.theme.MartiniCream
 @Composable
 fun HomeScreen(
     state: HomeUiState,
+    inspirationState: InspirationUiState,
+    networkCalls: List<NetworkCall>,
     onCatalogClick: () -> Unit,
     onEventsClick: () -> Unit,
     onProfileClick: () -> Unit,
     onRecommendationClick: (String) -> Unit,
-    onEventClick: (String) -> Unit
+    onEventClick: (String) -> Unit,
+    onInspirationQueryChange: (String) -> Unit,
+    onInspirationSearch: () -> Unit,
+    onInspirationCategorySelected: (String) -> Unit,
+    onInspirationSurprise: () -> Unit,
+    onInspirationRetry: () -> Unit,
+    onInspirationRecipeClick: (String) -> Unit,
+    onClearNetworkLog: () -> Unit
 ) {
+    var showNetworkConsole by remember { mutableStateOf(false) }
+
     Scaffold(
         bottomBar = {
             AppBottomBar(
@@ -124,6 +143,21 @@ fun HomeScreen(
                 }
             }
 
+            // CAMBIO REALIZADO (integración de API externa - TheMealDB):
+            // Sección con buscador, categorías, aleatoria y carrusel de recetas
+            // de la API pública, además del acceso a la Consola de red.
+            InspirationSection(
+                state = inspirationState,
+                lastCall = networkCalls.firstOrNull(),
+                onQueryChange = onInspirationQueryChange,
+                onSearch = onInspirationSearch,
+                onCategorySelected = onInspirationCategorySelected,
+                onSurprise = onInspirationSurprise,
+                onRetry = onInspirationRetry,
+                onRecipeClick = onInspirationRecipeClick,
+                onOpenConsole = { showNetworkConsole = true }
+            )
+
             if (state.isLoading) {
                 CircularProgressIndicator()
             }
@@ -161,6 +195,14 @@ fun HomeScreen(
                 Text("Mi perfil")
             }
         }
+
+        // CAMBIO REALIZADO: panel de evidencia de las llamadas a la API.
+        NetworkConsoleSheet(
+            visible = showNetworkConsole,
+            calls = networkCalls,
+            onClear = onClearNetworkLog,
+            onDismiss = { showNetworkConsole = false }
+        )
     }
 }
 
@@ -273,11 +315,20 @@ fun HomeScreenPreview() {
                     HomeEvent("1", "Taller de chocolatería", "Cupos disponibles", "15 de noviembre")
                 )
             ),
+            inspirationState = InspirationUiState(isLoading = false),
+            networkCalls = emptyList(),
             onCatalogClick = {},
             onEventsClick = {},
             onProfileClick = {},
             onRecommendationClick = {},
-            onEventClick = {}
+            onEventClick = {},
+            onInspirationQueryChange = {},
+            onInspirationSearch = {},
+            onInspirationCategorySelected = {},
+            onInspirationSurprise = {},
+            onInspirationRetry = {},
+            onInspirationRecipeClick = {},
+            onClearNetworkLog = {}
         )
     }
 }

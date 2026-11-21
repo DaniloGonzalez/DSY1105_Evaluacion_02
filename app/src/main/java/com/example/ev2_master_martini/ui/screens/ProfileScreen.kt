@@ -1,7 +1,5 @@
 package com.example.ev2_master_martini.ui.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,7 +12,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -36,17 +36,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.example.ev2_master_martini.model.ProfileUiState
 import com.example.ev2_master_martini.navigation.AppRoute
 import com.example.ev2_master_martini.ui.components.AppBottomBar
 import com.example.ev2_master_martini.ui.components.AppTopBar
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
+import com.example.ev2_master_martini.util.NativeActions
 
+/**
+ * CAMBIOS REALIZADOS:
+ * 1. (separación de responsabilidades) la verificación del permiso de cámara
+ *    se delega a [NativeActions].
+ * 2. (Mejora 1) se elimina el botón "Volver al inicio" inferior redundante: el
+ *    retroceso queda en la barra superior y el acceso a Inicio en la barra
+ *    inferior.
+ */
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
@@ -127,24 +137,27 @@ fun ProfileScreen(
             )
 
             profilePhoto?.let { bitmap ->
+                // CAMBIO REALIZADO (foto de perfil):
+                // La foto se muestra en un recuadro fijo (avatar circular de
+                // 160 dp) con ContentScale.Crop, en lugar de una Image sin alto
+                // ni escala que quedaba centrada y muy pequeña.
                 Image(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = "Foto de perfil tomada con la cámara",
-                    modifier = Modifier.fillMaxWidth()
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .size(160.dp)
+                        .clip(CircleShape)
                 )
             }
 
             Button(
                 onClick = {
-                    val permissionState = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CAMERA
-                    )
-
-                    if (permissionState == PackageManager.PERMISSION_GRANTED) {
+                    if (NativeActions.hasCameraPermission(context)) {
                         cameraLauncher.launch(null)
                     } else {
-                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                        permissionLauncher.launch(android.Manifest.permission.CAMERA)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -324,15 +337,6 @@ fun ProfileScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
-            }
-
-            // CAMBIO REALIZADO: este botón navega realmente al inicio (onHomeClick)
-            // en lugar de solo hacer popBackStack.
-            Button(
-                onClick = onHomeClick,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Volver al inicio")
             }
 
             Button(

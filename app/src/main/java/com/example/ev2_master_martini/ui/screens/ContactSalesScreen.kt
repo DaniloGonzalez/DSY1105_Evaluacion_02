@@ -1,7 +1,5 @@
 package com.example.ev2_master_martini.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -30,7 +28,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.ev2_master_martini.ui.components.AppTopBar
 import com.example.ev2_master_martini.ui.theme.Ev2_Master_MartiniTheme
+import com.example.ev2_master_martini.util.NativeActions
 
+/**
+ * CAMBIO REALIZADO (separación de responsabilidades):
+ * Las acciones sobre recursos nativos (marcar y enviar correo) se delegan a
+ * [NativeActions]; la pantalla ya no construye Intent ni Uri.
+ */
 @Composable
 fun ContactSalesScreen(
     onBack: () -> Unit
@@ -70,11 +74,7 @@ fun ContactSalesScreen(
 
             Button(
                 onClick = {
-                    val intent = Intent(
-                        Intent.ACTION_DIAL,
-                        Uri.parse("tel:+56912345678")
-                    )
-                    context.startActivity(intent)
+                    NativeActions.dial(context, "+56912345678")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -83,20 +83,15 @@ fun ContactSalesScreen(
 
             Button(
                 onClick = {
-                    val intent = Intent(
-                        Intent.ACTION_SENDTO,
-                        Uri.parse("mailto:ventas@mastermartini.cl")
-                    )
-                    context.startActivity(intent)
+                    NativeActions.sendEmail(context, "ventas@mastermartini.cl")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Enviar correo")
             }
 
-            // CAMBIO REALIZADO (animaciones funcionales): el mensaje de éxito se
-            // muestra con una animación de aparición (fade + scale + expand),
-            // entregando retroalimentación visual clara al usuario.
+            // Animaciones funcionales: el mensaje de éxito se muestra con una
+            // animación de aparición (fade + scale + expand).
             AnimatedVisibility(
                 visible = requestSent,
                 enter = fadeIn() + scaleIn() + expandVertically()
